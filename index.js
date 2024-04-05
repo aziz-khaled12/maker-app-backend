@@ -164,6 +164,9 @@ app.post(
       // Extract paths of all uploaded files
       const photos = req.files.map((file) => path.basename(file.path));
 
+      if (!photos || photos.length !== req.files.length) {
+        throw new Error("Error processing photo files");
+      }
       // Create new product instance
       const product = new productModel({
         sellerId: productData.sellerId,
