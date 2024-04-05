@@ -151,6 +151,7 @@ app.post(
 
       // Extract product data from request body
       const productData = req.body;
+      console.log(productData);
 
       // Check if product data is valid
       if (

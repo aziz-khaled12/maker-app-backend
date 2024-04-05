@@ -20,7 +20,7 @@ const productSchema = new mongoose.Schema({
   ],
   averageRating: {
     type: Number,
-    default: 0, // Initially set to 0
+    default: 0, 
   }
 });
 productSchema.index({ name: "text", description: "text" }); // Create text index
