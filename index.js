@@ -143,15 +143,28 @@ app.post(
   upload.array("photos"),
   async (req, res) => {
     try {
-      console.log(req.user.role);
+      // Check if user is authorized to add products
       if (req.user.role !== "seller") {
-        return res
-          .status(403)
-          .json({ error: "Only sellers are allowed to add products" });
+        return res.status(403).json({ error: "Only sellers are allowed to add products" });
       }
 
+      // Extract product data from request body
       const productData = req.body;
-      const photos = req.files.map((file) => path.basename(file.path)); // Get paths of all uploaded files
+
+      // Check if product data is valid
+      if (!productData || !productData.name || !productData.price || !productData.description) {
+        return res.status(400).json({ error: "Product data is incomplete" });
+      }
+
+      // Check if any files were uploaded
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ error: "No photos uploaded for the product" });
+      }
+
+      // Extract paths of all uploaded files
+      const photos = req.files.map((file) => path.basename(file.path));
+
+      // Create new product instance
       const product = new productModel({
         sellerId: productData.sellerId,
         price: productData.price,
@@ -163,6 +176,8 @@ app.post(
         photos: photos,
         categories: productData.categories,
       });
+
+      // Save product to the database
       const savedProduct = await product.save();
 
       // Log paths of all uploaded files
@@ -170,23 +185,23 @@ app.post(
         console.log("File uploaded:", path);
       });
 
+      // Send success response with saved product data
       res.status(201).json(savedProduct);
     } catch (error) {
+      // Handle errors
       console.error("Error adding product:", error);
-      res.status(500).send("Error adding product to the database");
+
+      // Check if error is due to validation failure
+      if (error.name === "ValidationError") {
+        return res.status(400).json({ error: error.message });
+      }
+
+      // Send generic error response
+      res.status(500).json({ error: "Error adding product to the database" });
     }
   }
 );
 
-app.get("/users/:userId/liked", async (req, res) => {
-  try {
-    const userId = req.params.userId;
-
-    res.status(200).json(productId);
-  } catch (error) {
-    res.status(500).send("Error adding product to the database");
-  }
-});
 
 app.put("/user/:userId/liked/:productId", async (req, res) => {
   try {
