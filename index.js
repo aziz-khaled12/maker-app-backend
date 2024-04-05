@@ -15,7 +15,7 @@ app.use(express.json());
 app.use(bodyParser.json());
 app.use(
   cors({
-    origin: ["https://maker-app-backend.vercel.app"],
+    origin: ["https://maker-app-frontend.vercel.app/"],
     credentials: true,
   })
 );
