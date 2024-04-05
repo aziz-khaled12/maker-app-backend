@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import argon2 from "argon2";
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -39,6 +40,13 @@ const userSchema = new mongoose.Schema({
 });
 
 // ... existing middleware for password hashing
+userSchema.pre('save', async function (next) {
+  if (this.isModified('password')) {
+    const hashedPassword = await argon2.hash(this.password, { type: argon2.argon2id });
+    this.password = hashedPassword;
+  }
+  next();
+});
 
 const userModel = mongoose.model('User', userSchema);
 export default userModel;

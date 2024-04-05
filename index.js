@@ -132,7 +132,6 @@ const storage = multer.diskStorage({
   },
 });
 
-
 const upload = multer({ storage: storage });
 const __filename = new URL(import.meta.url).pathname;
 const __dirname = path.dirname(__filename);
@@ -145,20 +144,29 @@ app.post(
     try {
       // Check if user is authorized to add products
       if (req.user.role !== "seller") {
-        return res.status(403).json({ error: "Only sellers are allowed to add products" });
+        return res
+          .status(403)
+          .json({ error: "Only sellers are allowed to add products" });
       }
 
       // Extract product data from request body
       const productData = req.body;
 
       // Check if product data is valid
-      if (!productData || !productData.name || !productData.price || !productData.description) {
+      if (
+        !productData ||
+        !productData.name ||
+        !productData.price ||
+        !productData.description
+      ) {
         return res.status(400).json({ error: "Product data is incomplete" });
       }
 
       // Check if any files were uploaded
       if (!req.files || req.files.length === 0) {
-        return res.status(400).json({ error: "No photos uploaded for the product" });
+        return res
+          .status(400)
+          .json({ error: "No photos uploaded for the product" });
       }
 
       // Extract paths of all uploaded files
@@ -180,13 +188,13 @@ app.post(
         categories: productData.categories,
       });
 
+      photos.forEach((path) => {
+        console.log("File uploaded:", path);
+      });
       // Save product to the database
       const savedProduct = await product.save();
 
       // Log paths of all uploaded files
-      photos.forEach((path) => {
-        console.log("File uploaded:", path);
-      });
 
       // Send success response with saved product data
       res.status(201).json(savedProduct);
@@ -204,7 +212,6 @@ app.post(
     }
   }
 );
-
 
 app.put("/user/:userId/liked/:productId", async (req, res) => {
   try {
