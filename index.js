@@ -123,7 +123,7 @@ function authenticateUser(req, res, next) {
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/photos");
+    cb(null, path.join(__dirname, "uploads", "photos"));
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -131,6 +131,7 @@ const storage = multer.diskStorage({
     cb(null, file.fieldname + "-" + uniqueSuffix + extension);
   },
 });
+
 
 const upload = multer({ storage: storage });
 const __filename = new URL(import.meta.url).pathname;
