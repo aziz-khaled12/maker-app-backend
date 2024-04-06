@@ -10,7 +10,10 @@ import productModel from "./models/Product.js";
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
 import Order from "./models/Order.js";
-import fs from "fs";
+import { initializeApp } from "firebase/app";
+import { getStorage, ref, uploadBytes, getDownloadURL }from "firebase/storage";
+
+
 
 const app = express();
 app.use(express.json());
@@ -21,6 +24,20 @@ app.use(
     credentials: true,
   })
 );
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBinaLpGsqe-7kSvtouKg2m0EVgLLTe6f0",
+  authDomain: "maker-419515.firebaseapp.com",
+  projectId: "maker-419515",
+  storageBucket: "maker-419515.appspot.com",
+  messagingSenderId: "610263677457",
+  appId: "1:610263677457:web:5e664211d49c4511780fb0",
+  measurementId: "G-DNDVJ7S2SV"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const storage = getStorage(firebaseApp);
+
 
 mongoose
   .connect(mongoDBURL, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -121,43 +138,53 @@ function authenticateUser(req, res, next) {
   }
 }
 
-app.use(express.static("uploads"));
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadPath = path.join(__dirname, "uploads", "photos");
-    // Ensure that the directory exists, if not, create it
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
+const filename = function (req, file) {
+  const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+  return file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname);
+};
+
+
+const upload = multer({
+  storage: multer.memoryStorage(), // Store files in memory temporarily
+
+  fileFilter: (req, file, callback) => {
+    // Validate file types and sizes (optional)
+    const allowedTypes = ["image/jpeg", "image/png"];
+    if (!allowedTypes.includes(file.mimetype)) {
+      return callback(new Error("Only JPG and PNG files are allowed."));
     }
-    cb(null, uploadPath);
+    callback(null, true); // Accept the file
   },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const extension = path.extname(file.originalname);
-    cb(null, file.fieldname + "-" + uniqueSuffix + extension);
-  },
+
+  filename: filename,
 });
-
-const __filename = new URL(import.meta.url).pathname;
-const __dirname = path.dirname(__filename);
-
-const upload = multer({ storage: storage });
 
 app.post(
   "/products",
   authenticateUser,
-  upload.array("photos"),
+  upload.array("photos"), // Handle multiple image uploads
   async (req, res) => {
-    if (req.user.role !== "seller") {
-      return res
-        .status(403)
-        .json({ error: "Only sellers are allowed to add products" });
-    }
-
     try {
+      // Authorization logic goes here (optional, can be replaced with req.user data if applicable)
+      if (req.user.role !== "seller") {
+        return res
+          .status(403)
+          .json({ error: "Only sellers are allowed to add products" });
+      }
+
       const productData = req.body;
-      const photos = req.files.map((file) => path.basename(file.path)); // Get paths of all uploaded files
+      const photos = [];
+
+      // Upload files to Firebase Storage
+      for (const file of req.files) {
+        const fileRef = ref(storage, `${filename(req, file)}`); // Use ref function to get storage reference
+        await uploadBytes(fileRef, file.buffer); // Upload file bytes
+        const url = await getDownloadURL(fileRef); // Get download URL for the uploaded file
+        photos.push(url);
+      }
+
+      // Create product model with Firebase Storage URLs
       const product = new productModel({
         sellerId: productData.sellerId,
         price: productData.price,
@@ -169,14 +196,8 @@ app.post(
         photos: photos,
         categories: productData.categories,
       });
-
       const savedProduct = await product.save();
-
-      // Log paths of all uploaded files
-      photos.forEach((path) => {
-        console.log("File uploaded:", path);
-      });
-
+      console.log(savedProduct);
       res.status(201).json(savedProduct);
     } catch (error) {
       console.error("Error adding product:", error);
