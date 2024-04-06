@@ -10,8 +10,7 @@ import productModel from "./models/Product.js";
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
 import Order from "./models/Order.js";
-import fs from 'fs';
-
+import fs from "fs";
 
 const app = express();
 app.use(express.json());
@@ -89,8 +88,6 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-
-
 app.get("/api/profile", authenticateUser, (req, res) => {
   res.status(200).json({ user: req.user });
 });
@@ -124,9 +121,7 @@ function authenticateUser(req, res, next) {
   }
 }
 
-
 app.use(express.static("uploads"));
-
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -149,7 +144,6 @@ const __dirname = path.dirname(__filename);
 
 const upload = multer({ storage: storage });
 
-
 app.post(
   "/products",
   authenticateUser,
@@ -161,30 +155,30 @@ app.post(
         .json({ error: "Only sellers are allowed to add products" });
     }
 
+    try {
+      const productData = req.body;
+      const photos = req.files.map((file) => path.basename(file.path)); // Get paths of all uploaded files
+      const product = new productModel({
+        sellerId: productData.sellerId,
+        price: productData.price,
+        name: productData.name,
+        description: productData.description,
+        colors: productData.colors,
+        materials: productData.materials,
+        sizes: productData.sizes,
+        photos: photos,
+        categories: productData.categories,
+      });
 
-    const productData = req.body;
-    const photos = req.files.map((file) => path.basename(file.path)); // Get paths of all uploaded files
-    const product = new productModel({
-      sellerId: productData.sellerId,
-      price: productData.price,
-      name: productData.name,
-      description: productData.description,
-      colors: productData.colors,
-      materials: productData.materials,
-      sizes: productData.sizes,
-      photos: photos,
-      categories: productData.categories,
-    });
+      const savedProduct = await product.save();
 
-    const savedProduct = await product.save();
+      // Log paths of all uploaded files
+      photos.forEach((path) => {
+        console.log("File uploaded:", path);
+      });
 
-    // Log paths of all uploaded files
-    photos.forEach((path) => {
-      console.log("File uploaded:", path);
-    });
-
-    res.status(201).json(savedProduct);
-    if (res.status != 201) {
+      res.status(201).json(savedProduct);
+    } catch (error) {
       console.error("Error adding product:", error);
       res.status(500).send("Error adding product to the database");
     }
