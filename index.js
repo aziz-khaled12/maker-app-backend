@@ -139,7 +139,8 @@ const __dirname = path.dirname(__filename);
 app.post(
   "/api/products",
   authenticateUser,
-  upload.array("photos"),
+  // Only apply Multer middleware if photos are present
+  (req, res, next) => req.files && next(),
   async (req, res) => {
     try {
       // Check if user is authorized to add products
@@ -163,20 +164,14 @@ app.post(
         return res.status(400).json({ error: "Product data is incomplete" });
       }
 
-      // Check if any files were uploaded
-      if (!req.files || req.files.length === 0) {
-        return res
-          .status(400)
-          .json({ error: "No photos uploaded for the product" });
+      // Handle products with or without photos:
+      let photos = [];
+      if (req.files && req.files.length > 0) {
+        // Extract photo paths for products with photos
+        photos = req.files.map((file) => path.basename(file.path));
       }
 
-      // Extract paths of all uploaded files
-      const photos = req.files.map((file) => path.basename(file.path));
-
-      if (!photos || photos.length !== req.files.length) {
-        throw new Error("Error processing photo files");
-      }
-      // Create new product instance
+      // Create product instance, setting photos to an empty array if none provided
       const product = new productModel({
         sellerId: productData.sellerId,
         price: productData.price,
@@ -189,14 +184,9 @@ app.post(
         categories: productData.categories,
       });
 
-      photos.forEach((path) => {
-        console.log("File uploaded:", path);
-      });
       // Save product to the database
       const savedProduct = await product.save();
-      console.log("Product to save:", product);
-
-      // Log paths of all uploaded files
+      console.log("Product saved:", savedProduct);
 
       // Send success response with saved product data
       res.status(201).json(savedProduct);
@@ -214,6 +204,7 @@ app.post(
     }
   }
 );
+
 
 app.put("/user/:userId/liked/:productId", async (req, res) => {
   try {
