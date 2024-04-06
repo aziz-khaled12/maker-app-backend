@@ -141,35 +141,36 @@ app.post(
   authenticateUser,
   upload.array("photos"),
   async (req, res) => {
-    try {
-      console.log(req.user.role);
-      if (req.user.role !== "seller") {
-        return res
-          .status(403)
-          .json({ error: "Only sellers are allowed to add products" });
-      }
+    console.log(req.user.role);
+    if (req.user.role !== "seller") {
+      return res
+        .status(403)
+        .json({ error: "Only sellers are allowed to add products" });
+    }
 
-      const productData = req.body;
-      const photos = req.files.map((file) => path.basename(file.path)); // Get paths of all uploaded files
-      const product = new productModel({
-        sellerId: productData.sellerId,
-        price: productData.price,
-        name: productData.name,
-        description: productData.description,
-        colors: productData.colors,
-        materials: productData.materials,
-        sizes: productData.sizes,photos: photos,
-        categories: productData.categories,
-      });
-      const savedProduct = await product.save();
+    const productData = req.body;
+    const photos = req.files.map((file) => path.basename(file.path)); // Get paths of all uploaded files
+    const product = new productModel({
+      sellerId: productData.sellerId,
+      price: productData.price,
+      name: productData.name,
+      description: productData.description,
+      colors: productData.colors,
+      materials: productData.materials,
+      sizes: productData.sizes,
+      photos: photos,
+      categories: productData.categories,
+    });
 
-      // Log paths of all uploaded files
-      photos.forEach((path) => {
-        console.log("File uploaded:", path);
-      });
+    const savedProduct = await product.save();
 
-      res.status(201).json(savedProduct);
-    } catch (error) {
+    // Log paths of all uploaded files
+    photos.forEach((path) => {
+      console.log("File uploaded:", path);
+    });
+
+    res.status(201).json(savedProduct);
+    if (res.status != 201) {
       console.error("Error adding product:", error);
       res.status(500).send("Error adding product to the database");
     }
@@ -395,6 +396,7 @@ app.post("/api/orders", authenticateUser, async (req, res) => {
   try {
     const { userId, productId, size, color, quantity, total } = req.body;
     const state = "pending";
+    console.log(state);
     const order = new Order({
       userId,
       productId,

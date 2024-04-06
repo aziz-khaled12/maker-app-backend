@@ -13,7 +13,7 @@ const productSchema = new mongoose.Schema({
   categories: { type: [String], required: true },
   ratings: [
     {
-      userId: { type: mongoose.Schema.Types.ObjectId, ref: 'userModel' }, // User who provided the rating
+      userId: { type: mongoose.Schema.Types.ObjectId, ref: 'userModel', default: "0" }, // User who provided the rating
       rating: { type: Number, min: 1, max: 5 },
       timestamp: { type: Date, default: Date.now },
     }
