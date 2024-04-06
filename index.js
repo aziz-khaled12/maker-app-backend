@@ -140,20 +140,11 @@ app.post(
   "/users/niggas/things/products",
   upload.array("photos"),
   async (req, res) => {
+
+    const productData = req.body;
+    console.log("Product data:", productData);
+    const photos = req.files.map((file) => path.basename(file.path));
     try {
-      // Check if user is authorized to add products
-      if (req.user.role !== "seller") {
-        return res
-          .status(403)
-          .json({ error: "Only sellers are allowed to add products" });
-      }
-
-      // Extract product data from request body
-      const productData = req.body;
-      console.log("Product data:", productData);
-
-      // Extract paths of all uploaded files
-      const photos = req.files.map((file) => path.basename(file.path));
 
       // Create new product instance
       const product = new productModel({
@@ -174,7 +165,6 @@ app.post(
       // Save product to the database
       console.log("Product to save:", product);
       const savedProduct = await product.save();
-      
 
       // Log paths of all uploaded files
 
