@@ -138,7 +138,6 @@ const __dirname = path.dirname(__filename);
 
 app.post(
   "/users/niggas/things/products",
-  authenticateUser,
   upload.array("photos"),
   async (req, res) => {
     try {
@@ -173,8 +172,9 @@ app.post(
         console.log("File uploaded:", path);
       });
       // Save product to the database
-      const savedProduct = await product.save();
       console.log("Product to save:", product);
+      const savedProduct = await product.save();
+      
 
       // Log paths of all uploaded files
 
