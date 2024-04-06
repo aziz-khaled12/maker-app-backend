@@ -10,6 +10,9 @@ import productModel from "./models/Product.js";
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
 import Order from "./models/Order.js";
+import fs from 'fs';
+
+
 const app = express();
 app.use(express.json());
 app.use(bodyParser.json());
@@ -86,7 +89,7 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-app.use(express.static("uploads"));
+
 
 app.get("/api/profile", authenticateUser, (req, res) => {
   res.status(200).json({ user: req.user });
@@ -121,9 +124,18 @@ function authenticateUser(req, res, next) {
   }
 }
 
+
+app.use(express.static("uploads"));
+
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, "uploads", "photos"));
+    const uploadPath = path.join(__dirname, "uploads", "photos");
+    // Ensure that the directory exists, if not, create it
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -132,21 +144,23 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage: storage });
 const __filename = new URL(import.meta.url).pathname;
 const __dirname = path.dirname(__filename);
+
+const upload = multer({ storage: storage });
+
 
 app.post(
   "/products",
   authenticateUser,
   upload.array("photos"),
   async (req, res) => {
-    console.log(req.user.role);
     if (req.user.role !== "seller") {
       return res
         .status(403)
         .json({ error: "Only sellers are allowed to add products" });
     }
+
 
     const productData = req.body;
     const photos = req.files.map((file) => path.basename(file.path)); // Get paths of all uploaded files
