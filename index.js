@@ -137,7 +137,7 @@ const __filename = new URL(import.meta.url).pathname;
 const __dirname = path.dirname(__filename);
 
 app.post(
-  "/products",
+  "/api/products",
   authenticateUser,
   upload.array("photos"),
   async (req, res) => {
@@ -151,7 +151,7 @@ app.post(
 
       // Extract product data from request body
       const productData = req.body;
-      console.log(productData);
+      console.log("Product data:", productData);
 
       // Check if product data is valid
       if (
@@ -194,6 +194,7 @@ app.post(
       });
       // Save product to the database
       const savedProduct = await product.save();
+      console.log("Product to save:", product);
 
       // Log paths of all uploaded files
 
