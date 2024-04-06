@@ -187,7 +187,7 @@ app.post(
         return res.status(400).json({ error: error.message });
       }
       // Send generic error response
-      res.status(500).json(productData);
+      res.json(productData);
     }
   }
 );
