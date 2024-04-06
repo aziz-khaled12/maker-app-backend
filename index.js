@@ -182,8 +182,7 @@ app.post(
       res.status(201).json(savedProduct);
     } catch (error) {
       // Handle errors
-      console.log(productData);
-      console.error("Error adding product:", error);
+      console.error("Error adding product:", productData, error);
 
       // Check if error is due to validation failure
       if (error.name === "ValidationError") {
