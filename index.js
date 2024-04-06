@@ -181,16 +181,13 @@ app.post(
       // Send success response with saved product data
       res.status(201).json(savedProduct);
     } catch (error) {
-      // Handle errors
-      console.error("Error adding product:", productData, error);
-
+      console.log(productData);
       // Check if error is due to validation failure
       if (error.name === "ValidationError") {
         return res.status(400).json({ error: error.message });
       }
-
       // Send generic error response
-      res.status(500).json({ error: "Error adding product to the database" });
+      res.status(500).json(productData);
     }
   }
 );
