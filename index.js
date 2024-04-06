@@ -139,7 +139,6 @@ const __dirname = path.dirname(__filename);
 app.post(
   "/products", // Change the route to match the frontend request
   authenticateUser,
-  upload.array("photos"),
   async (req, res) => {
     try {
       const {
@@ -154,7 +153,6 @@ app.post(
       } = req.body;
       console.log("Product data:", sellerId);
 
-      const photos = req.files.map((file) => path.basename(file.path));
 
       // Create new product instance
       const product = new productModel({
@@ -165,7 +163,6 @@ app.post(
         colors,
         materials,
         sizes,
-        photos,
         categories,
       });
 
