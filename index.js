@@ -137,7 +137,7 @@ const __filename = new URL(import.meta.url).pathname;
 const __dirname = path.dirname(__filename);
 
 app.post(
-  "/users/niggas/things/products",
+  "/products",
   authenticateUser,
   upload.array("photos"),
   async (req, res) => {
@@ -147,9 +147,9 @@ app.post(
         price,
         name,
         description,
-        selectedColors,
+        colors,
         materials,
-        selectedSizes,
+        sizes,
         categories,
       } = req.body;
       console.log("Product data:", sellerId);
@@ -162,9 +162,9 @@ app.post(
         price,
         name,
         description,
-        selectedColors,
+        colors,
         materials,
-        selectedSizes,
+        sizes,
         photos,
         categories,
       });
