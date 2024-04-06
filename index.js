@@ -138,23 +138,44 @@ const __dirname = path.dirname(__filename);
 
 app.post(
   "/users/niggas/things/products",
+  authenticateUser,
   upload.array("photos"),
   async (req, res) => {
     try {
+      const {
+        sellerId,
+        price,
+        name,
+        description,
+        selectedColors,
+        materials,
+        selectedSizes,
+        categories,
+      } = req.body;
+      console.log("Product data:", sellerId);
+
+      const photos = req.files.map((file) => path.basename(file.path));
+
+      // Create new product instance
       const product = new productModel({
-        sellerId: 1,
-        price: 1,
-        name: "name",
-        description: "desc",
-        colors: ["colors"],
-        materials: ["materials"],
-        sizes: ["sizes"],
-        photos: ["photos"],
-        categories: ["productData.categories"],
+        sellerId,
+        price,
+        name,
+        description,
+        selectedColors,
+        materials,
+        selectedSizes,
+        photos,
+        categories,
+      });
+
+      photos.forEach((path) => {
+        console.log("File uploaded:", path);
       });
       // Save product to the database
       console.log("Product to save:", product);
       const savedProduct = await product.save();
+
       // Log paths of all uploaded files
 
       // Send success response with saved product data
