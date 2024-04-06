@@ -148,24 +148,19 @@ app.post(
 
       // Create new product instance
       const product = new productModel({
-        sellerId: productData.sellerId,
-        price: productData.price,
-        name: productData.name,
-        description: productData.description,
-        colors: productData.colors,
-        materials: productData.materials,
-        sizes: productData.sizes,
-        photos: photos,
-        categories: productData.categories,
-      });
-
-      photos.forEach((path) => {
-        console.log("File uploaded:", path);
+        sellerId: 1,
+        price: 1,
+        name: "name",
+        description: "desc",
+        colors: ["colors"],
+        materials: ["materials"],
+        sizes: ["sizes"],
+        photos: ["photos"],
+        categories: ["productData.categories"],
       });
       // Save product to the database
       console.log("Product to save:", product);
       const savedProduct = await product.save();
-
       // Log paths of all uploaded files
 
       // Send success response with saved product data
