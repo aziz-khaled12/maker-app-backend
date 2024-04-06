@@ -140,13 +140,7 @@ app.post(
   "/users/niggas/things/products",
   upload.array("photos"),
   async (req, res) => {
-
-    const productData = req.body;
-    console.log("Product data:", productData);
-    const photos = req.files.map((file) => path.basename(file.path));
     try {
-
-      // Create new product instance
       const product = new productModel({
         sellerId: 1,
         price: 1,
