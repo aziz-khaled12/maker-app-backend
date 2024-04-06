@@ -137,57 +137,41 @@ const __filename = new URL(import.meta.url).pathname;
 const __dirname = path.dirname(__filename);
 
 app.post(
-  "/products", // Change the route to match the frontend request
+  "/products",
   authenticateUser,
+  upload.array("photos"),
   async (req, res) => {
     try {
-      const {
-        sellerId,
-        price,
-        name,
-        description,
-        colors,
-        materials,
-        sizes,
-        categories,
-      } = req.body;
-      console.log("Product data:", sellerId);
+      console.log(req.user.role);
+      if (req.user.role !== "seller") {
+        return res
+          .status(403)
+          .json({ error: "Only sellers are allowed to add products" });
+      }
 
-
-      // Create new product instance
+      const productData = req.body;
+      const photos = req.files.map((file) => path.basename(file.path)); // Get paths of all uploaded files
       const product = new productModel({
-        sellerId,
-        price,
-        name,
-        description,
-        colors,
-        materials,
-        sizes,
-        categories,
+        sellerId: productData.sellerId,
+        price: productData.price,
+        name: productData.name,
+        description: productData.description,
+        colors: productData.colors,
+        materials: productData.materials,
+        sizes: productData.sizes,photos: photos,
+        categories: productData.categories,
       });
-
-      photos.forEach((path) => {
-        console.log("File uploaded:", path);
-      });
-      // Save product to the database
-      console.log("Product to save:", product);
       const savedProduct = await product.save();
 
       // Log paths of all uploaded files
+      photos.forEach((path) => {
+        console.log("File uploaded:", path);
+      });
 
-      // Send success response with saved product data
       res.status(201).json(savedProduct);
     } catch (error) {
-      // Handle errors
       console.error("Error adding product:", error);
-
-      // Check if error is due to validation failure
-      if (error.name === "ValidationError") {
-        return res.status(400).json({ error: error.message });
-      }
-
-      // Send generic error response
-      res.status(500).json({ error: "Error adding product to the database" });
+      res.status(500).send("Error adding product to the database");
     }
   }
 );
