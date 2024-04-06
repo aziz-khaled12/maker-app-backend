@@ -153,29 +153,9 @@ app.post(
       const productData = req.body;
       console.log("Product data:", productData);
 
-      // Check if product data is valid
-      if (
-        !productData ||
-        !productData.name ||
-        !productData.price ||
-        !productData.description
-      ) {
-        return res.status(400).json({ error: "Product data is incomplete" });
-      }
-
-      // Check if any files were uploaded
-      if (!req.files || req.files.length === 0) {
-        return res
-          .status(400)
-          .json({ error: "No photos uploaded for the product" });
-      }
-
       // Extract paths of all uploaded files
       const photos = req.files.map((file) => path.basename(file.path));
 
-      if (!photos || photos.length !== req.files.length) {
-        throw new Error("Error processing photo files");
-      }
       // Create new product instance
       const product = new productModel({
         sellerId: productData.sellerId,
@@ -202,6 +182,7 @@ app.post(
       res.status(201).json(savedProduct);
     } catch (error) {
       // Handle errors
+      console.log(productData);
       console.error("Error adding product:", error);
 
       // Check if error is due to validation failure
