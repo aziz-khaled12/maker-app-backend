@@ -137,7 +137,7 @@ const __filename = new URL(import.meta.url).pathname;
 const __dirname = path.dirname(__filename);
 
 app.post(
-  "/api/products", // Change the route to match the frontend request
+  "/products", // Change the route to match the frontend request
   authenticateUser,
   upload.array("photos"),
   async (req, res) => {
